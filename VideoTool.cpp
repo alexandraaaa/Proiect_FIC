@@ -1,3 +1,10 @@
+
+#include <stdio.h>
+#include <sys/socket.h>
+#include <stdlib.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <arpa/inet.h>
 #include <sstream>
 #include <string>
 #include <iostream>
@@ -5,6 +12,8 @@
 #include "opencv2/highgui/highgui.hpp"
 //#include <opencv2\cv.h>
 #include "opencv2/opencv.hpp"
+
+#define PORT 20236
 
 using namespace std;
 using namespace cv;
@@ -178,6 +187,8 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed) {
 int main(int argc, char* argv[])
 {
 
+/*
+
 	//some boolean variables for different functionality within this
 	//program
 	bool trackObjects = true;
@@ -237,6 +248,45 @@ int main(int argc, char* argv[])
 		waitKey(30);
 	}
 
+*/
+
+    struct sockaddr_in address;
+    int sock = 0, valread;
+    struct sockaddr_in serv_addr;
+    char hello[] = "l";
+    char buffer[1024] = {0};
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        printf("\n Socket creation error \n");
+        return -1;
+    }
+  
+    memset(&serv_addr, '0', sizeof(serv_addr));
+  
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(PORT);
+      
+    // Convert IPv4 and IPv6 addresses from text to binary form
+    if(inet_pton(AF_INET, "193.226.12.217", &serv_addr.sin_addr)<=0) 
+    {
+        printf("\nInvalid address/ Address not supported \n");
+        return -1;
+    }
+  
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    {
+        printf("\nConnection Failed \n");
+        return -1;
+    }
+    /*char c;
+    while(scanf("%c",c))
+    {
+      send(sock , (char *)c , 1 , 0 );
+      printf("dati comanda:");
+    }*/
+    
+    send(sock , hello , strlen(hello) , 0 );
+    
 	return 0;
 }
 

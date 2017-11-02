@@ -7,6 +7,18 @@
 #IncludeRegexTransform: 
 
 /home/cloud/AndritoiBeleiu/Proiect_FIC/VideoTool.cpp
+stdio.h
+-
+sys/socket.h
+-
+stdlib.h
+-
+netinet/in.h
+-
+string.h
+-
+arpa/inet.h
+-
 sstream
 -
 string
