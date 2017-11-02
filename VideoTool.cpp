@@ -184,6 +184,47 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed) {
 		else putText(cameraFeed, "TOO MUCH NOISE! ADJUST FILTER", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
 	}
 }
+
+int callSocket()
+{
+
+    struct sockaddr_in address;
+    int sock = 0, valread;
+    struct sockaddr_in serv_addr;
+    char hello[] = "s";
+    char buffer[1024] = {0};
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        printf("\n Socket creation error \n");
+        return -1;
+    }
+  
+    memset(&serv_addr, '0', sizeof(serv_addr));
+  
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(PORT);
+      
+    // Convert IPv4 and IPv6 addresses from text to binary form
+    if(inet_pton(AF_INET, "193.226.12.217", &serv_addr.sin_addr)<=0) 
+    {
+        printf("\nInvalid address/ Address not supported \n");
+        return -1;
+    }
+  
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    {
+        printf("\nConnection Failed \n");
+        return -1;
+    }
+    char c[4];
+    while(scanf("%s",c))
+    {
+      send(sock , c , 1 , 0 );
+      printf("dati comanda:");
+    }
+    return 0;
+}
+
 int main(int argc, char* argv[])
 {
 
@@ -249,44 +290,7 @@ int main(int argc, char* argv[])
 	}
 
 */
-
-    struct sockaddr_in address;
-    int sock = 0, valread;
-    struct sockaddr_in serv_addr;
-    char hello[] = "l";
-    char buffer[1024] = {0};
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-    {
-        printf("\n Socket creation error \n");
-        return -1;
-    }
-  
-    memset(&serv_addr, '0', sizeof(serv_addr));
-  
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
-      
-    // Convert IPv4 and IPv6 addresses from text to binary form
-    if(inet_pton(AF_INET, "193.226.12.217", &serv_addr.sin_addr)<=0) 
-    {
-        printf("\nInvalid address/ Address not supported \n");
-        return -1;
-    }
-  
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-    {
-        printf("\nConnection Failed \n");
-        return -1;
-    }
-    /*char c;
-    while(scanf("%c",c))
-    {
-      send(sock , (char *)c , 1 , 0 );
-      printf("dati comanda:");
-    }*/
-    
-    send(sock , hello , strlen(hello) , 0 );
-    
+  callSocket();
 	return 0;
 }
 
