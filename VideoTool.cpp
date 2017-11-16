@@ -19,12 +19,12 @@ using namespace std;
 using namespace cv;
 //initial min and max HSV filter values.
 //these will be changed using trackbars
-int H_MIN = 0;
-int H_MAX = 256;
-int S_MIN = 0;
-int S_MAX = 256;
-int V_MIN = 0;
-int V_MAX = 256;
+int H_MIN[2] = {0, 152};
+int H_MAX[2] = {256, 256};
+int S_MIN[2] = {0, 0};
+int S_MAX[2] = {256, 256};
+int V_MIN[2] = {208, 0};
+int V_MAX[2] = {256, 256};
 //default capture width and height
 const int FRAME_WIDTH = 640;
 const int FRAME_HEIGHT = 480;
@@ -69,23 +69,30 @@ void createTrackbars() {
 	namedWindow(trackbarWindowName, 0);
 	//create memory to store trackbar name on window
 	char TrackbarName[50];
-	sprintf(TrackbarName, "H_MIN", H_MIN);
-	sprintf(TrackbarName, "H_MAX", H_MAX);
-	sprintf(TrackbarName, "S_MIN", S_MIN);
-	sprintf(TrackbarName, "S_MAX", S_MAX);
-	sprintf(TrackbarName, "V_MIN", V_MIN);
-	sprintf(TrackbarName, "V_MAX", V_MAX);
+	sprintf(TrackbarName, "H_MIN", H_MIN[0]);
+	sprintf(TrackbarName, "H_MAX", H_MAX[0]);
+	sprintf(TrackbarName, "S_MIN", S_MIN[0]);
+	sprintf(TrackbarName, "S_MAX", S_MAX[0]);
+	sprintf(TrackbarName, "V_MIN", V_MIN[0]);
+	sprintf(TrackbarName, "V_MAX", V_MAX[0]);
 	//create trackbars and insert them into window
 	//3 parameters are: the address of the variable that is changing when the trackbar is moved(eg.H_LOW),
 	//the max value the trackbar can move (eg. H_HIGH),
 	//and the function that is called whenever the trackbar is moved(eg. on_trackbar)
 	//                                  ---->    ---->     ---->
-	createTrackbar("H_MIN", trackbarWindowName, &H_MIN, H_MAX, on_trackbar);
-	createTrackbar("H_MAX", trackbarWindowName, &H_MAX, H_MAX, on_trackbar);
-	createTrackbar("S_MIN", trackbarWindowName, &S_MIN, S_MAX, on_trackbar);
-	createTrackbar("S_MAX", trackbarWindowName, &S_MAX, S_MAX, on_trackbar);
-	createTrackbar("V_MIN", trackbarWindowName, &V_MIN, V_MAX, on_trackbar);
-	createTrackbar("V_MAX", trackbarWindowName, &V_MAX, V_MAX, on_trackbar);
+	createTrackbar("H_MIN", trackbarWindowName, &H_MIN[0], H_MAX[0], on_trackbar);
+	createTrackbar("H_MAX", trackbarWindowName, &H_MAX[0], H_MAX[0], on_trackbar);
+	createTrackbar("S_MIN", trackbarWindowName, &S_MIN[0], S_MAX[0], on_trackbar);
+	createTrackbar("S_MAX", trackbarWindowName, &S_MAX[0], S_MAX[0], on_trackbar);
+	createTrackbar("V_MIN", trackbarWindowName, &V_MIN[0], V_MAX[0], on_trackbar);
+	createTrackbar("V_MAX", trackbarWindowName, &V_MAX[0], V_MAX[0], on_trackbar);
+ 
+ 	createTrackbar("H_MIN", trackbarWindowName, &H_MIN[1], H_MAX[1], on_trackbar);
+	createTrackbar("H_MAX", trackbarWindowName, &H_MAX[1], H_MAX[1], on_trackbar);
+	createTrackbar("S_MIN", trackbarWindowName, &S_MIN[1], S_MAX[1], on_trackbar);
+	createTrackbar("S_MAX", trackbarWindowName, &S_MAX[1], S_MAX[1], on_trackbar);
+	createTrackbar("V_MIN", trackbarWindowName, &V_MIN[1], V_MAX[1], on_trackbar);
+	createTrackbar("V_MAX", trackbarWindowName, &V_MAX[1], V_MAX[1], on_trackbar);
 
 
 }
@@ -228,7 +235,7 @@ int callSocket()
 int main(int argc, char* argv[])
 {
 
-/*
+
 
 	//some boolean variables for different functionality within this
 	//program
@@ -243,7 +250,7 @@ int main(int argc, char* argv[])
 	//matrix storage for binary threshold image
 	Mat threshold;
 	//x and y values for the location of the object
-	int x = 0, y = 0;
+	int x = 0, y = 0, x1 = 0, y1 = 0;
 	//create slider bars for HSV filtering
 	createTrackbars();
 	//video capture object to acquire webcam feed
@@ -255,9 +262,6 @@ int main(int argc, char* argv[])
 	capture.set(CV_CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT);
 	//start an infinite loop where webcam feed is copied to cameraFeed matrix
 	//all of our operations will be performed within this loop
-
-
-
 	
 	while (1) {
 
@@ -268,28 +272,37 @@ int main(int argc, char* argv[])
 		cvtColor(cameraFeed, HSV, COLOR_BGR2HSV);
 		//filter HSV image between values and store filtered image to
 		//threshold matrix
-		inRange(HSV, Scalar(H_MIN, S_MIN, V_MIN), Scalar(H_MAX, S_MAX, V_MAX), threshold);
+		inRange(HSV, Scalar(H_MIN[0], S_MIN[0], V_MIN[0]), Scalar(H_MAX[0], S_MAX[0], V_MAX[0]), threshold);
+    inRange(HSV, Scalar(H_MIN[1], S_MIN[1], V_MIN[1]), Scalar(H_MAX[1], S_MAX[1], V_MAX[1]), threshold);
 		//perform morphological operations on thresholded image to eliminate noise
 		//and emphasize the filtered object(s)
 		if (useMorphOps)
-			morphOps(threshold);
+		{
+        morphOps(threshold);
+        morphOps(threshold);
+    }
+        
 		//pass in thresholded frame to our object tracking function
 		//this function will return the x and y coordinates of the
 		//filtered object
 		if (trackObjects)
-			trackFilteredObject(x, y, threshold, cameraFeed);
+		{
+        trackFilteredObject(x, y, threshold, cameraFeed);
+        trackFilteredObject(x1, y1, threshold, cameraFeed);
+    }
 
 		//show frames
+   
 		imshow(windowName2, threshold);
 		imshow(windowName, cameraFeed);
 		//imshow(windowName1, HSV);
 		setMouseCallback("Original Image", on_mouse, &p);
 		//delay 30ms so that screen can refresh.
-		//image will not appear without this waitKey() command
+		//image will not appear without this waitKey() command 
 		waitKey(30);
 	}
 
-*/
+
   callSocket();
 	return 0;
 }
